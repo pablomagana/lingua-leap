@@ -7,6 +7,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { recordAttempt } from "@/lib/progress";
+import { notifyPromotion } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/vocabulary")({
@@ -158,12 +159,13 @@ function Flashcard({ item, userId, onNext }: { item: VocabItem; userId: string; 
   const [flipped, setFlipped] = useState(false);
 
   const handleResult = async (knew: boolean) => {
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "vocab_flashcard",
       isCorrect: knew,
       itemId: item.id,
     });
+    notifyPromotion(promotedTo);
     onNext(xpEarned);
   };
 
@@ -230,13 +232,14 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
     if (picked) return;
     setPicked(opt);
     const correct = opt === item.translation_es;
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "vocab_multiple_choice",
       isCorrect: correct,
       itemId: item.id,
       userAnswer: opt,
     });
+    notifyPromotion(promotedTo);
     setTimeout(() => onNext(xpEarned), 900);
   };
 
@@ -290,7 +293,7 @@ function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: str
     if (!answer.trim() || result) return;
     const correct = normalize(answer) === normalize(item.translation_es);
     setResult(correct ? "ok" : "fail");
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "vocab_translate",
       isCorrect: correct,
@@ -298,6 +301,7 @@ function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: str
       userAnswer: answer,
     });
     if (!correct) toast.error(`Correcto: ${item.translation_es}`);
+    notifyPromotion(promotedTo);
     setTimeout(() => onNext(xpEarned), 1200);
   };
 

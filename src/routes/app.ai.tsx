@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { correctSentence } from "@/server/ai.functions";
 import { recordAttempt } from "@/lib/progress";
+import { notifyPromotion } from "@/lib/notify";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/app/ai")({
@@ -43,12 +44,13 @@ function AiPage() {
         toast.error(res.error);
       } else if (res.correction) {
         setResult(res.correction);
-        await recordAttempt({
+        const { promotedTo } = await recordAttempt({
           userId: user.id,
           kind: "ai_correction",
           isCorrect: res.correction.is_correct,
           userAnswer: sentence,
         });
+        notifyPromotion(promotedTo);
       }
     } catch (e) {
       toast.error("Error al contactar la IA");

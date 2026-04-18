@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { recordAttempt } from "@/lib/progress";
+import { notifyPromotion } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/grammar")({
@@ -115,13 +116,14 @@ function GrammarMC({ item, userId, onNext }: { item: GItem; userId: string; onNe
     if (picked) return;
     setPicked(opt);
     const correct = opt === item.correct_answer;
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "grammar_multiple_choice",
       isCorrect: correct,
       itemId: item.id,
       userAnswer: opt,
     });
+    notifyPromotion(promotedTo);
     setTimeout(() => onNext(xpEarned), 1500);
   };
 
@@ -175,13 +177,14 @@ function GrammarFill({ item, userId, onNext }: { item: GItem; userId: string; on
     if (!answer.trim() || result) return;
     const correct = normalize(answer) === normalize(item.correct_answer);
     setResult(correct ? "ok" : "fail");
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "grammar_fill_blank",
       isCorrect: correct,
       itemId: item.id,
       userAnswer: answer,
     });
+    notifyPromotion(promotedTo);
     setTimeout(() => onNext(xpEarned), 2000);
   };
 
