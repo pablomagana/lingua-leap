@@ -44,12 +44,13 @@ function AiPage() {
         toast.error(res.error);
       } else if (res.correction) {
         setResult(res.correction);
-        await recordAttempt({
+        const { promotedTo } = await recordAttempt({
           userId: user.id,
           kind: "ai_correction",
           isCorrect: res.correction.is_correct,
           userAnswer: sentence,
         });
+        notifyPromotion(promotedTo);
       }
     } catch (e) {
       toast.error("Error al contactar la IA");
