@@ -293,7 +293,7 @@ function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: str
     if (!answer.trim() || result) return;
     const correct = normalize(answer) === normalize(item.translation_es);
     setResult(correct ? "ok" : "fail");
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "vocab_translate",
       isCorrect: correct,
@@ -301,6 +301,7 @@ function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: str
       userAnswer: answer,
     });
     if (!correct) toast.error(`Correcto: ${item.translation_es}`);
+    notifyPromotion(promotedTo);
     setTimeout(() => onNext(xpEarned), 1200);
   };
 
