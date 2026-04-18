@@ -46,3 +46,38 @@ export const XP_PER_CORRECT: Record<string, number> = {
   grammar_fill_blank: 12,
   ai_correction: 15,
 };
+
+export type CefrLevel = "A1" | "A2" | "B1" | "B2" | "C1";
+
+export const CEFR_ORDER: CefrLevel[] = ["A1", "A2", "B1", "B2", "C1"];
+
+// XP acumulado mínimo y precisión mínima necesarios para promocionar AL siguiente nivel.
+// Para subir de A1 → A2 necesitas cumplir los requisitos en la fila "A1".
+export const CEFR_PROMOTION: Record<CefrLevel, { minXp: number; minAccuracy: number; minAttempts: number }> = {
+  A1: { minXp: 200, minAccuracy: 0.8, minAttempts: 30 },
+  A2: { minXp: 600, minAccuracy: 0.8, minAttempts: 50 },
+  B1: { minXp: 1500, minAccuracy: 0.8, minAttempts: 80 },
+  B2: { minXp: 3500, minAccuracy: 0.85, minAttempts: 120 },
+  C1: { minXp: Number.POSITIVE_INFINITY, minAccuracy: 1, minAttempts: Number.POSITIVE_INFINITY }, // máximo
+};
+
+export function nextCefr(current: CefrLevel): CefrLevel | null {
+  const idx = CEFR_ORDER.indexOf(current);
+  if (idx < 0 || idx >= CEFR_ORDER.length - 1) return null;
+  return CEFR_ORDER[idx + 1];
+}
+
+export function shouldPromote(
+  current: CefrLevel,
+  totalXp: number,
+  recentAttempts: number,
+  recentCorrect: number,
+): boolean {
+  const next = nextCefr(current);
+  if (!next) return false;
+  const req = CEFR_PROMOTION[current];
+  if (totalXp < req.minXp) return false;
+  if (recentAttempts < req.minAttempts) return false;
+  const accuracy = recentAttempts > 0 ? recentCorrect / recentAttempts : 0;
+  return accuracy >= req.minAccuracy;
+}
