@@ -116,13 +116,14 @@ function GrammarMC({ item, userId, onNext }: { item: GItem; userId: string; onNe
     if (picked) return;
     setPicked(opt);
     const correct = opt === item.correct_answer;
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "grammar_multiple_choice",
       isCorrect: correct,
       itemId: item.id,
       userAnswer: opt,
     });
+    notifyPromotion(promotedTo);
     setTimeout(() => onNext(xpEarned), 1500);
   };
 
