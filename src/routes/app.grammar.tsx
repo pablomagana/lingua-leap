@@ -177,13 +177,14 @@ function GrammarFill({ item, userId, onNext }: { item: GItem; userId: string; on
     if (!answer.trim() || result) return;
     const correct = normalize(answer) === normalize(item.correct_answer);
     setResult(correct ? "ok" : "fail");
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "grammar_fill_blank",
       isCorrect: correct,
       itemId: item.id,
       userAnswer: answer,
     });
+    notifyPromotion(promotedTo);
     setTimeout(() => onNext(xpEarned), 2000);
   };
 
