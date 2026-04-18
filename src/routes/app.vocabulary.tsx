@@ -232,13 +232,14 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
     if (picked) return;
     setPicked(opt);
     const correct = opt === item.translation_es;
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "vocab_multiple_choice",
       isCorrect: correct,
       itemId: item.id,
       userAnswer: opt,
     });
+    notifyPromotion(promotedTo);
     setTimeout(() => onNext(xpEarned), 900);
   };
 
