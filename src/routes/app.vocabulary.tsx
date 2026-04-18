@@ -159,12 +159,13 @@ function Flashcard({ item, userId, onNext }: { item: VocabItem; userId: string; 
   const [flipped, setFlipped] = useState(false);
 
   const handleResult = async (knew: boolean) => {
-    const { xpEarned } = await recordAttempt({
+    const { xpEarned, promotedTo } = await recordAttempt({
       userId,
       kind: "vocab_flashcard",
       isCorrect: knew,
       itemId: item.id,
     });
+    notifyPromotion(promotedTo);
     onNext(xpEarned);
   };
 
