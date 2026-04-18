@@ -5,7 +5,6 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { StreakBadge } from "@/components/streak-badge";
 import { Progress } from "@/components/ui/progress";
-import { Button } from "@/components/ui/button";
 import { progressToNextLevel, todayDateString } from "@/lib/gamification";
 
 export const Route = createFileRoute("/app/")({
@@ -146,5 +145,3 @@ function ModuleCard({ icon, title, desc }: { icon: React.ReactNode; title: strin
   );
 }
 
-// Re-export Button to silence unused import — actually used? Remove.
-void Button;
