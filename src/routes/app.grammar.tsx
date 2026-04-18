@@ -6,6 +6,7 @@ import { Input } from "@/components/ui/input";
 import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { recordAttempt } from "@/lib/progress";
+import { notifyPromotion } from "@/lib/notify";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/grammar")({
