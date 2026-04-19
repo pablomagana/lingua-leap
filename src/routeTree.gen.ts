@@ -16,6 +16,7 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AppIndexRouteImport } from './routes/app.index'
 import { Route as AppVocabularyRouteImport } from './routes/app.vocabulary'
 import { Route as AppProgressRouteImport } from './routes/app.progress'
+import { Route as AppPlanRouteImport } from './routes/app.plan'
 import { Route as AppGrammarRouteImport } from './routes/app.grammar'
 import { Route as AppAiRouteImport } from './routes/app.ai'
 
@@ -54,6 +55,11 @@ const AppProgressRoute = AppProgressRouteImport.update({
   path: '/progress',
   getParentRoute: () => AppRoute,
 } as any)
+const AppPlanRoute = AppPlanRouteImport.update({
+  id: '/plan',
+  path: '/plan',
+  getParentRoute: () => AppRoute,
+} as any)
 const AppGrammarRoute = AppGrammarRouteImport.update({
   id: '/grammar',
   path: '/grammar',
@@ -72,6 +78,7 @@ export interface FileRoutesByFullPath {
   '/onboarding': typeof OnboardingRoute
   '/app/ai': typeof AppAiRoute
   '/app/grammar': typeof AppGrammarRoute
+  '/app/plan': typeof AppPlanRoute
   '/app/progress': typeof AppProgressRoute
   '/app/vocabulary': typeof AppVocabularyRoute
   '/app/': typeof AppIndexRoute
@@ -82,6 +89,7 @@ export interface FileRoutesByTo {
   '/onboarding': typeof OnboardingRoute
   '/app/ai': typeof AppAiRoute
   '/app/grammar': typeof AppGrammarRoute
+  '/app/plan': typeof AppPlanRoute
   '/app/progress': typeof AppProgressRoute
   '/app/vocabulary': typeof AppVocabularyRoute
   '/app': typeof AppIndexRoute
@@ -94,6 +102,7 @@ export interface FileRoutesById {
   '/onboarding': typeof OnboardingRoute
   '/app/ai': typeof AppAiRoute
   '/app/grammar': typeof AppGrammarRoute
+  '/app/plan': typeof AppPlanRoute
   '/app/progress': typeof AppProgressRoute
   '/app/vocabulary': typeof AppVocabularyRoute
   '/app/': typeof AppIndexRoute
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/app/ai'
     | '/app/grammar'
+    | '/app/plan'
     | '/app/progress'
     | '/app/vocabulary'
     | '/app/'
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/app/ai'
     | '/app/grammar'
+    | '/app/plan'
     | '/app/progress'
     | '/app/vocabulary'
     | '/app'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/onboarding'
     | '/app/ai'
     | '/app/grammar'
+    | '/app/plan'
     | '/app/progress'
     | '/app/vocabulary'
     | '/app/'
@@ -191,6 +203,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AppProgressRouteImport
       parentRoute: typeof AppRoute
     }
+    '/app/plan': {
+      id: '/app/plan'
+      path: '/plan'
+      fullPath: '/app/plan'
+      preLoaderRoute: typeof AppPlanRouteImport
+      parentRoute: typeof AppRoute
+    }
     '/app/grammar': {
       id: '/app/grammar'
       path: '/grammar'
@@ -211,6 +230,7 @@ declare module '@tanstack/react-router' {
 interface AppRouteChildren {
   AppAiRoute: typeof AppAiRoute
   AppGrammarRoute: typeof AppGrammarRoute
+  AppPlanRoute: typeof AppPlanRoute
   AppProgressRoute: typeof AppProgressRoute
   AppVocabularyRoute: typeof AppVocabularyRoute
   AppIndexRoute: typeof AppIndexRoute
@@ -219,6 +239,7 @@ interface AppRouteChildren {
 const AppRouteChildren: AppRouteChildren = {
   AppAiRoute: AppAiRoute,
   AppGrammarRoute: AppGrammarRoute,
+  AppPlanRoute: AppPlanRoute,
   AppProgressRoute: AppProgressRoute,
   AppVocabularyRoute: AppVocabularyRoute,
   AppIndexRoute: AppIndexRoute,
@@ -235,3 +256,12 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { createStart } from '@tanstack/react-start'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+  }
+}
