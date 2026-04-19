@@ -210,9 +210,6 @@ function speak(text: string) {
   window.speechSynthesis.speak(u);
 }
 
-function normalize(s: string) {
-  return s.toLowerCase().trim().replace(/[.,!?¿¡]/g, "").replace(/\s+/g, " ");
-}
 
 function Flashcard({ item, userId, onNext }: { item: VocabItem; userId: string; onNext: (xp: number) => void }) {
   const [flipped, setFlipped] = useState(false);
