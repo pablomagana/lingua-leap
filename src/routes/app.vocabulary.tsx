@@ -282,17 +282,13 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
   );
 }
 
-function normalize(s: string) {
-  return s.toLowerCase().trim().replace(/[.,!?¿¡]/g, "").replace(/\s+/g, " ");
-}
-
 function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: string; onNext: (xp: number) => void }) {
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<"ok" | "fail" | null>(null);
 
   const submit = async () => {
     if (!answer.trim() || result) return;
-    const correct = normalize(answer) === normalize(item.translation_es);
+    const correct = isAnswerCorrect(answer, item.translation_es);
     setResult(correct ? "ok" : "fail");
     const { xpEarned, promotedTo } = await recordAttempt({
       userId,
