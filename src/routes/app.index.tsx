@@ -100,13 +100,30 @@ function Dashboard() {
         </div>
       </div>
 
-      {/* CTA principal */}
+      {/* Plan de hoy */}
+      <Link
+        to="/app/plan"
+        className="block rounded-2xl border bg-gradient-to-br from-accent/90 to-primary p-6 text-primary-foreground shadow-lg shadow-primary/20 transition-transform hover:scale-[1.01]"
+      >
+        <div className="flex items-center gap-2 text-sm opacity-90">
+          <Sparkles className="h-4 w-4" /> Plan personalizado
+        </div>
+        <h2 className="mt-1 text-2xl font-bold">Practicar hoy</h2>
+        <p className="mt-1 text-sm opacity-90">
+          Una sesión mixta auto-generada con vocabulario y gramática de tu nivel.
+        </p>
+        <span className="mt-4 inline-flex items-center gap-2 rounded-full bg-white/15 px-4 py-2 text-sm font-semibold backdrop-blur">
+          Empezar plan →
+        </span>
+      </Link>
+
+      {/* CTA módulos */}
       <div className="rounded-2xl border bg-card p-6 shadow-sm">
         <div className="flex flex-col items-start justify-between gap-4 md:flex-row md:items-center">
           <div>
-            <h2 className="text-xl font-bold">Practica ahora</h2>
+            <h2 className="text-xl font-bold">O practica por módulo</h2>
             <p className="mt-1 text-sm text-muted-foreground">
-              Elige un módulo y suma XP. Cada minuto cuenta.
+              Elige un módulo específico y suma XP.
             </p>
           </div>
         </div>
