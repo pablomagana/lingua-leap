@@ -8,6 +8,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { recordAttempt } from "@/lib/progress";
 import { notifyPromotion } from "@/lib/notify";
 import { isAnswerCorrect } from "@/lib/answer-check";
+import { ResultBanner } from "@/components/result-banner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/grammar")({
@@ -112,6 +113,7 @@ function GrammarPage() {
 
 function GrammarMC({ item, userId, onNext }: { item: GItem; userId: string; onNext: (xp: number) => void }) {
   const [picked, setPicked] = useState<string | null>(null);
+  const [earnedXp, setEarnedXp] = useState<number | null>(null);
 
   const pick = async (opt: string) => {
     if (picked) return;
@@ -125,8 +127,10 @@ function GrammarMC({ item, userId, onNext }: { item: GItem; userId: string; onNe
       userAnswer: opt,
     });
     notifyPromotion(promotedTo);
-    setTimeout(() => onNext(xpEarned), 1500);
+    setEarnedXp(xpEarned);
   };
+
+  const isCorrect = picked === item.correct_answer;
 
   return (
     <div className="space-y-4">
@@ -136,8 +140,8 @@ function GrammarMC({ item, userId, onNext }: { item: GItem; userId: string; onNe
       </div>
       <div className="grid gap-2">
         {item.options.map((opt) => {
-          const isPicked = picked === opt;
-          const isCorrect = opt === item.correct_answer;
+          const isPickedOpt = picked === opt;
+          const isCorrectOpt = opt === item.correct_answer;
           const showResult = picked !== null;
           return (
             <button
@@ -147,9 +151,9 @@ function GrammarMC({ item, userId, onNext }: { item: GItem; userId: string; onNe
               className={cn(
                 "rounded-xl border-2 p-4 text-left font-medium transition-all",
                 !showResult && "hover:border-primary hover:bg-primary/5",
-                showResult && isCorrect && "border-success bg-success/10 text-success",
-                showResult && isPicked && !isCorrect && "border-destructive bg-destructive/10 text-destructive",
-                showResult && !isPicked && !isCorrect && "opacity-50",
+                showResult && isCorrectOpt && "border-success bg-success/10 text-success",
+                showResult && isPickedOpt && !isCorrectOpt && "border-destructive bg-destructive/10 text-destructive",
+                showResult && !isPickedOpt && !isCorrectOpt && "opacity-50",
               )}
             >
               {opt}
@@ -157,10 +161,13 @@ function GrammarMC({ item, userId, onNext }: { item: GItem; userId: string; onNe
           );
         })}
       </div>
-      {picked && item.explanation && (
-        <div className="rounded-xl border bg-secondary p-4 text-sm">
-          <span className="font-semibold">💡 </span>{item.explanation}
-        </div>
+      {earnedXp !== null && (
+        <ResultBanner
+          correct={isCorrect}
+          correctAnswer={item.correct_answer}
+          explanation={item.explanation}
+          onContinue={() => onNext(earnedXp)}
+        />
       )}
     </div>
   );
@@ -169,6 +176,7 @@ function GrammarMC({ item, userId, onNext }: { item: GItem; userId: string; onNe
 function GrammarFill({ item, userId, onNext }: { item: GItem; userId: string; onNext: (xp: number) => void }) {
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<"ok" | "fail" | null>(null);
+  const [earnedXp, setEarnedXp] = useState<number | null>(null);
 
   const submit = async () => {
     if (!answer.trim() || result) return;
@@ -182,7 +190,7 @@ function GrammarFill({ item, userId, onNext }: { item: GItem; userId: string; on
       userAnswer: answer,
     });
     notifyPromotion(promotedTo);
-    setTimeout(() => onNext(xpEarned), 2000);
+    setEarnedXp(xpEarned);
   };
 
   return (
@@ -204,16 +212,17 @@ function GrammarFill({ item, userId, onNext }: { item: GItem; userId: string; on
         )}
         disabled={result !== null}
       />
-      <Button size="lg" className="w-full" onClick={submit} disabled={!answer.trim() || result !== null}>
-        Comprobar <ArrowRight className="h-4 w-4" />
-      </Button>
-      {result && (
-        <div className={cn("rounded-xl border p-4 text-sm",
-          result === "ok" ? "border-success bg-success/10" : "border-destructive bg-destructive/10",
-        )}>
-          {result === "ok" ? "✅ ¡Correcto!" : `❌ Respuesta correcta: ${item.correct_answer}`}
-          {item.explanation && <p className="mt-1 text-muted-foreground">{item.explanation}</p>}
-        </div>
+      {result === null ? (
+        <Button size="lg" className="w-full" onClick={submit} disabled={!answer.trim()}>
+          Comprobar <ArrowRight className="h-4 w-4" />
+        </Button>
+      ) : earnedXp !== null && (
+        <ResultBanner
+          correct={result === "ok"}
+          correctAnswer={item.correct_answer}
+          explanation={item.explanation}
+          onContinue={() => onNext(earnedXp)}
+        />
       )}
     </div>
   );

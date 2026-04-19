@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { recordAttempt } from "@/lib/progress";
 import { notifyPromotion } from "@/lib/notify";
 import { isAnswerCorrect } from "@/lib/answer-check";
+import { ResultBanner } from "@/components/result-banner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/vocabulary")({
@@ -228,6 +229,7 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
   }, [item, pool]);
 
   const [picked, setPicked] = useState<string | null>(null);
+  const [earnedXp, setEarnedXp] = useState<number | null>(null);
 
   const handlePick = async (opt: string) => {
     if (picked) return;
@@ -241,8 +243,10 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
       userAnswer: opt,
     });
     notifyPromotion(promotedTo);
-    setTimeout(() => onNext(xpEarned), 900);
+    setEarnedXp(xpEarned);
   };
+
+  const isCorrect = picked === item.translation_es;
 
   return (
     <div className="space-y-4">
@@ -257,8 +261,8 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
       </div>
       <div className="grid gap-2">
         {options.map((opt) => {
-          const isPicked = picked === opt;
-          const isCorrect = opt === item.translation_es;
+          const isPickedOpt = picked === opt;
+          const isCorrectOpt = opt === item.translation_es;
           const showResult = picked !== null;
           return (
             <button
@@ -268,9 +272,9 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
               className={cn(
                 "rounded-xl border-2 p-4 text-left font-medium transition-all",
                 !showResult && "hover:border-primary hover:bg-primary/5",
-                showResult && isCorrect && "border-success bg-success/10 text-success",
-                showResult && isPicked && !isCorrect && "border-destructive bg-destructive/10 text-destructive",
-                showResult && !isPicked && !isCorrect && "opacity-50",
+                showResult && isCorrectOpt && "border-success bg-success/10 text-success",
+                showResult && isPickedOpt && !isCorrectOpt && "border-destructive bg-destructive/10 text-destructive",
+                showResult && !isPickedOpt && !isCorrectOpt && "opacity-50",
               )}
             >
               {opt}
@@ -278,6 +282,9 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
           );
         })}
       </div>
+      {earnedXp !== null && (
+        <ResultBanner correct={isCorrect} correctAnswer={item.translation_es} onContinue={() => onNext(earnedXp)} />
+      )}
     </div>
   );
 }
@@ -285,6 +292,7 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
 function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: string; onNext: (xp: number) => void }) {
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<"ok" | "fail" | null>(null);
+  const [earnedXp, setEarnedXp] = useState<number | null>(null);
 
   const submit = async () => {
     if (!answer.trim() || result) return;
@@ -297,9 +305,8 @@ function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: str
       itemId: item.id,
       userAnswer: answer,
     });
-    if (!correct) toast.error(`Correcto: ${item.translation_es}`);
     notifyPromotion(promotedTo);
-    setTimeout(() => onNext(xpEarned), 1200);
+    setEarnedXp(xpEarned);
   };
 
   return (
@@ -326,9 +333,13 @@ function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: str
         )}
         disabled={result !== null}
       />
-      <Button size="lg" className="w-full" onClick={submit} disabled={!answer.trim() || result !== null}>
-        Comprobar <ArrowRight className="h-4 w-4" />
-      </Button>
+      {result === null ? (
+        <Button size="lg" className="w-full" onClick={submit} disabled={!answer.trim()}>
+          Comprobar <ArrowRight className="h-4 w-4" />
+        </Button>
+      ) : earnedXp !== null && (
+        <ResultBanner correct={result === "ok"} correctAnswer={item.translation_es} onContinue={() => onNext(earnedXp)} />
+      )}
     </div>
   );
 }
