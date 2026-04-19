@@ -7,6 +7,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { recordAttempt } from "@/lib/progress";
 import { notifyPromotion } from "@/lib/notify";
+import { isAnswerCorrect } from "@/lib/answer-check";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/grammar")({
@@ -165,17 +166,13 @@ function GrammarMC({ item, userId, onNext }: { item: GItem; userId: string; onNe
   );
 }
 
-function normalize(s: string) {
-  return s.toLowerCase().trim().replace(/[.,!?]/g, "").replace(/\s+/g, " ");
-}
-
 function GrammarFill({ item, userId, onNext }: { item: GItem; userId: string; onNext: (xp: number) => void }) {
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<"ok" | "fail" | null>(null);
 
   const submit = async () => {
     if (!answer.trim() || result) return;
-    const correct = normalize(answer) === normalize(item.correct_answer);
+    const correct = isAnswerCorrect(answer, item.correct_answer);
     setResult(correct ? "ok" : "fail");
     const { xpEarned, promotedTo } = await recordAttempt({
       userId,

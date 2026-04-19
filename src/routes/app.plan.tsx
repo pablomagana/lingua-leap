@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { recordAttempt } from "@/lib/progress";
 import { notifyPromotion } from "@/lib/notify";
+import { isAnswerCorrect } from "@/lib/answer-check";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/plan")({
@@ -209,9 +210,6 @@ function speak(text: string) {
   window.speechSynthesis.speak(u);
 }
 
-function normalize(s: string) {
-  return s.toLowerCase().trim().replace(/[.,!?¿¡]/g, "").replace(/\s+/g, " ");
-}
 
 function Flashcard({ item, userId, onNext }: { item: VocabItem; userId: string; onNext: (xp: number) => void }) {
   const [flipped, setFlipped] = useState(false);
@@ -309,7 +307,7 @@ function VocabTranslate({ item, userId, onNext }: { item: VocabItem; userId: str
   const [result, setResult] = useState<"ok" | "fail" | null>(null);
   const submit = async () => {
     if (!answer.trim() || result) return;
-    const correct = normalize(answer) === normalize(item.translation_es);
+    const correct = isAnswerCorrect(answer, item.translation_es);
     setResult(correct ? "ok" : "fail");
     const { xpEarned, promotedTo } = await recordAttempt({ userId, kind: "vocab_translate", isCorrect: correct, itemId: item.id, userAnswer: answer });
     if (!correct) toast.error(`Correcto: ${item.translation_es}`);
@@ -392,7 +390,7 @@ function GrammarFill({ item, userId, onNext }: { item: GrammarItem; userId: stri
   const [result, setResult] = useState<"ok" | "fail" | null>(null);
   const submit = async () => {
     if (!answer.trim() || result) return;
-    const correct = normalize(answer) === normalize(item.correct_answer);
+    const correct = isAnswerCorrect(answer, item.correct_answer);
     setResult(correct ? "ok" : "fail");
     const { xpEarned, promotedTo } = await recordAttempt({ userId, kind: "grammar_fill_blank", isCorrect: correct, itemId: item.id, userAnswer: answer });
     notifyPromotion(promotedTo);
