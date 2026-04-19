@@ -8,6 +8,7 @@ import { useAuth } from "@/hooks/use-auth";
 import { supabase } from "@/integrations/supabase/client";
 import { recordAttempt } from "@/lib/progress";
 import { notifyPromotion } from "@/lib/notify";
+import { isAnswerCorrect } from "@/lib/answer-check";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/vocabulary")({
