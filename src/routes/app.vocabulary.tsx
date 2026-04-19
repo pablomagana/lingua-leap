@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { recordAttempt } from "@/lib/progress";
 import { notifyPromotion } from "@/lib/notify";
 import { isAnswerCorrect } from "@/lib/answer-check";
+import { ResultBanner } from "@/components/result-banner";
 import { cn } from "@/lib/utils";
 
 export const Route = createFileRoute("/app/vocabulary")({
@@ -291,6 +292,7 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
 function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: string; onNext: (xp: number) => void }) {
   const [answer, setAnswer] = useState("");
   const [result, setResult] = useState<"ok" | "fail" | null>(null);
+  const [earnedXp, setEarnedXp] = useState<number | null>(null);
 
   const submit = async () => {
     if (!answer.trim() || result) return;
@@ -303,9 +305,8 @@ function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: str
       itemId: item.id,
       userAnswer: answer,
     });
-    if (!correct) toast.error(`Correcto: ${item.translation_es}`);
     notifyPromotion(promotedTo);
-    setTimeout(() => onNext(xpEarned), 1200);
+    setEarnedXp(xpEarned);
   };
 
   return (
@@ -332,9 +333,13 @@ function TranslateWrite({ item, userId, onNext }: { item: VocabItem; userId: str
         )}
         disabled={result !== null}
       />
-      <Button size="lg" className="w-full" onClick={submit} disabled={!answer.trim() || result !== null}>
-        Comprobar <ArrowRight className="h-4 w-4" />
-      </Button>
+      {result === null ? (
+        <Button size="lg" className="w-full" onClick={submit} disabled={!answer.trim()}>
+          Comprobar <ArrowRight className="h-4 w-4" />
+        </Button>
+      ) : earnedXp !== null && (
+        <ResultBanner correct={result === "ok"} correctAnswer={item.translation_es} onContinue={() => onNext(earnedXp)} />
+      )}
     </div>
   );
 }
