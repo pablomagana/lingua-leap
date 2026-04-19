@@ -228,6 +228,7 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
   }, [item, pool]);
 
   const [picked, setPicked] = useState<string | null>(null);
+  const [earnedXp, setEarnedXp] = useState<number | null>(null);
 
   const handlePick = async (opt: string) => {
     if (picked) return;
@@ -241,8 +242,10 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
       userAnswer: opt,
     });
     notifyPromotion(promotedTo);
-    setTimeout(() => onNext(xpEarned), 900);
+    setEarnedXp(xpEarned);
   };
+
+  const isCorrect = picked === item.translation_es;
 
   return (
     <div className="space-y-4">
@@ -257,8 +260,8 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
       </div>
       <div className="grid gap-2">
         {options.map((opt) => {
-          const isPicked = picked === opt;
-          const isCorrect = opt === item.translation_es;
+          const isPickedOpt = picked === opt;
+          const isCorrectOpt = opt === item.translation_es;
           const showResult = picked !== null;
           return (
             <button
@@ -268,9 +271,9 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
               className={cn(
                 "rounded-xl border-2 p-4 text-left font-medium transition-all",
                 !showResult && "hover:border-primary hover:bg-primary/5",
-                showResult && isCorrect && "border-success bg-success/10 text-success",
-                showResult && isPicked && !isCorrect && "border-destructive bg-destructive/10 text-destructive",
-                showResult && !isPicked && !isCorrect && "opacity-50",
+                showResult && isCorrectOpt && "border-success bg-success/10 text-success",
+                showResult && isPickedOpt && !isCorrectOpt && "border-destructive bg-destructive/10 text-destructive",
+                showResult && !isPickedOpt && !isCorrectOpt && "opacity-50",
               )}
             >
               {opt}
@@ -278,6 +281,9 @@ function MultipleChoice({ item, pool, userId, onNext }: { item: VocabItem; pool:
           );
         })}
       </div>
+      {earnedXp !== null && (
+        <ResultBanner correct={isCorrect} correctAnswer={item.translation_es} onContinue={() => onNext(earnedXp)} />
+      )}
     </div>
   );
 }
